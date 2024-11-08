@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte et Formulaire</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Conteneur principal pour les formulaires -->
+    <div id="form-container">
+        <!-- Premier formulaire : Sélection des villes -->
+        <div id="form1">
+            <h3>Sélectionner les villes</h3>
+            <input type="text" id="startCity" placeholder="Ville de départ" class="autocomplete">
+            <input type="text" id="endCity" placeholder="Ville d'arrivée" class="autocomplete">
+            <button onclick="addMarkers()">Afficher le trajet</button>
+        </div>
+
+        <!-- Deuxième formulaire : Sélection des véhicules -->
+        <div id="form2">
+            <h3>Sélectionner un véhicule</h3>
+            <select id="vehicle-list">
+                <option value="">Sélectionner un véhicule</option>
+                <!-- Les options seront ajoutées dynamiquement ici -->
+            </select>
+            <div id="vehicle-details"></div>
+        </div>
+    </div>
+
+    <!-- Carte -->
+    <div id="map"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <script src="/static/js/map.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@urql/core": "^5.0.8",
+    "@urql/exchange-graphcache": "^7.2.1",
+    "fs": "^0.0.1-security",
+    "node-fetch": "^3.3.2"
+  }
+}

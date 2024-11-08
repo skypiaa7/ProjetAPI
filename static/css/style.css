@@ -1,0 +1,63 @@
+/* Réinitialiser les marges et paddings */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Conteneur du formulaire */
+#form-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000; /* Assure que le formulaire est devant la carte */
+    background-color: rgba(255, 255, 255, 0.8); /* Fond semi-transparent */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px; /* Largeur du conteneur des formulaires */
+}
+
+/* Premier formulaire : Sélection des villes */
+#form1 {
+    margin-bottom: 20px;
+}
+
+/* Deuxième formulaire : Sélection des véhicules */
+#form2 {
+    margin-top: 20px;
+}
+
+/* Style des champs du formulaire */
+input, select, button {
+    margin: 5px;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* Style du bouton */
+button {
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+/* Carte */
+#map {
+    height: 100vh; /* La carte prend toute la hauteur de la fenêtre */
+    z-index: 1; /* La carte reste derrière le formulaire */
+}
+
+/* Style de la carte */
+#form1 h3, #form2 h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    text-align: center;
+}

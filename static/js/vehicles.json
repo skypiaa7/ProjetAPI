@@ -1,0 +1,132 @@
+[
+  {
+    "id": "5f043d88bc262f1627fc032b",
+    "naming": {
+      "make": "Audi",
+      "model": "e-tron Sportback",
+      "chargetrip_version": "50 quattro (2020 - 2022)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/60a51a62956f020a6712c7a4-fff290f5c62a451cc7f62933482d2f921a9e757a.png"
+      }
+    }
+  },
+  {
+    "id": "623bb4d935b2be28d404ea1a",
+    "naming": {
+      "make": "Audi",
+      "model": "e-tron Sportback",
+      "chargetrip_version": "50 quattro (2021 - 2022)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/624579748648a1a881e8a5ff-cd1b83b9db1decfbcb91bc51f1b5d1f2e3f8164e.png"
+      }
+    }
+  },
+  {
+    "id": "650afb3adde1e819a5d83f8a",
+    "naming": {
+      "make": "Cadillac",
+      "model": "LYRIQ",
+      "chargetrip_version": "AWD"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/6511784399044522feebc93a-8cc571d8fbac55f449597384197eb19a1f9f2eb1.png"
+      }
+    }
+  },
+  {
+    "id": "63dcf548a5d8dd1fd460da13",
+    "naming": {
+      "make": "Ford",
+      "model": "F-150 Lightning",
+      "chargetrip_version": "Lariat Extended Range"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/63e2122d9bc3ed14616c84c2-413d76ce32af0aa47206cbc2a14c5be22a8caefb.png"
+      }
+    }
+  },
+  {
+    "id": "5f043d62bc262f1627fc031d",
+    "naming": {
+      "make": "Hyundai",
+      "model": "Kona",
+      "chargetrip_version": "Electric 39 kWh (2020 - 2021)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/63c67a877963035ec962aba0-d9a03dddc473b43c8e54e9ff967185d26a95444c.png"
+      }
+    }
+  },
+  {
+    "id": "63d3e0ce44bd322626dd23f8",
+    "naming": {
+      "make": "Kia",
+      "model": "Niro",
+      "chargetrip_version": "PHEV (2018 - 2019)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/63dbdc8396fdac6382629761-780c52027b2dcb7febf6c01543ea57f598473198.png"
+      }
+    }
+  },
+  {
+    "id": "63ef773bc7ac42e426e66301",
+    "naming": {
+      "make": "Opel",
+      "model": "Ampera",
+      "chargetrip_version": "(2014 - 2015)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/63f8a65981481f48522df6c4-09cdf531a5f18f7638c512e92941303ade109ef2.png"
+      }
+    }
+  },
+  {
+    "id": "5f043b26bc262f1627fc0233",
+    "naming": {
+      "make": "Tesla",
+      "model": "Model S",
+      "chargetrip_version": "85 (2013 - 2016)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/5f1aafdb657beb44c4638991-bb126cf5731f327486789e32ae9a9e1b860564f2.png"
+      }
+    }
+  },
+  {
+    "id": "61f1e0e544e154840f7371f9",
+    "naming": {
+      "make": "Tesla",
+      "model": "Model Y",
+      "chargetrip_version": "Long Range Dual Motor (2022 - present)"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/61fa2f5170d2c0b3b340dbb0-cc5f8edffaa07d540ee9dc697058d17552af5620.png"
+      }
+    }
+  },
+  {
+    "id": "602546cb9ab805659a9ca0cb",
+    "naming": {
+      "make": "Xpeng",
+      "model": "G3",
+      "chargetrip_version": "460"
+    },
+    "media": {
+      "image": {
+        "thumbnail_url": "https://cars.chargetrip.io/63c17452bc96093f4400f78e-119da56d4902885d3203cbf0cb4409c45b9c147d.png"
+      }
+    }
+  }
+]
