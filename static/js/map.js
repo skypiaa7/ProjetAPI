@@ -89,10 +89,12 @@ function geocodeCity(city, callback) {
 
 // Fonction pour récupérer la liste des véhicules depuis le fichier JSON
 function fetchVehicles() {
-    fetch('/static/js/vehicles.json')  // URL relative vers le fichier JSON
+    fetch('/static/js/vehicleData.json')  // URL relative vers le fichier JSON
         .then(response => response.json())  // Parser le fichier JSON
         .then(vehicles => {
             const vehicleList = document.getElementById('vehicle-list');
+            
+            // Remplir la liste déroulante avec les véhicules
             vehicles.forEach(vehicle => {
                 const option = document.createElement('option');
                 option.value = vehicle.id;
@@ -107,6 +109,7 @@ function fetchVehicles() {
                     document.getElementById('vehicle-details').innerHTML = `
                         <strong>Modèle:</strong> ${selectedVehicle.naming.make} ${selectedVehicle.naming.model} <br>
                         <strong>Version:</strong> ${selectedVehicle.naming.chargetrip_version} <br>
+                        <strong>Autonomie:</strong> ${selectedVehicle.range.chargetrip_range.best} km (meilleure) - ${selectedVehicle.range.chargetrip_range.worst} km (pire) <br>
                         <img src="${selectedVehicle.media.image.thumbnail_url}" alt="${selectedVehicle.naming.make} ${selectedVehicle.naming.model}" style="width: 200px;">
                     `;
                 }
@@ -114,6 +117,7 @@ function fetchVehicles() {
         })
         .catch(error => console.error('Erreur lors du chargement des véhicules :', error));
 }
+
 
 // Appeler la fonction pour récupérer les véhicules au chargement de la page
 window.onload = function () {

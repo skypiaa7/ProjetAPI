@@ -6,6 +6,12 @@
       "model": "e-tron Sportback",
       "chargetrip_version": "50 quattro (2020 - 2022)"
     },
+    "range": {
+      "chargetrip_range": {
+        "best": 309,
+        "worst": 277
+      }
+    },
     "media": {
       "image": {
         "thumbnail_url": "https://cars.chargetrip.io/60a51a62956f020a6712c7a4-fff290f5c62a451cc7f62933482d2f921a9e757a.png"
@@ -18,6 +24,12 @@
       "make": "Audi",
       "model": "e-tron Sportback",
       "chargetrip_version": "50 quattro (2021 - 2022)"
+    },
+    "range": {
+      "chargetrip_range": {
+        "best": 309,
+        "worst": 277
+      }
     },
     "media": {
       "image": {
@@ -32,6 +44,12 @@
       "model": "LYRIQ",
       "chargetrip_version": "AWD"
     },
+    "range": {
+      "chargetrip_range": {
+        "best": 406,
+        "worst": 365
+      }
+    },
     "media": {
       "image": {
         "thumbnail_url": "https://cars.chargetrip.io/6511784399044522feebc93a-8cc571d8fbac55f449597384197eb19a1f9f2eb1.png"
@@ -44,6 +62,12 @@
       "make": "Ford",
       "model": "F-150 Lightning",
       "chargetrip_version": "Lariat Extended Range"
+    },
+    "range": {
+      "chargetrip_range": {
+        "best": 425,
+        "worst": 383
+      }
     },
     "media": {
       "image": {
@@ -58,6 +82,12 @@
       "model": "Kona",
       "chargetrip_version": "Electric 39 kWh (2020 - 2021)"
     },
+    "range": {
+      "chargetrip_range": {
+        "best": 230,
+        "worst": 204
+      }
+    },
     "media": {
       "image": {
         "thumbnail_url": "https://cars.chargetrip.io/63c67a877963035ec962aba0-d9a03dddc473b43c8e54e9ff967185d26a95444c.png"
@@ -70,6 +100,12 @@
       "make": "Kia",
       "model": "Niro",
       "chargetrip_version": "PHEV (2018 - 2019)"
+    },
+    "range": {
+      "chargetrip_range": {
+        "best": 41,
+        "worst": 37
+      }
     },
     "media": {
       "image": {
@@ -84,6 +120,12 @@
       "model": "Ampera",
       "chargetrip_version": "(2014 - 2015)"
     },
+    "range": {
+      "chargetrip_range": {
+        "best": 63,
+        "worst": 56
+      }
+    },
     "media": {
       "image": {
         "thumbnail_url": "https://cars.chargetrip.io/63f8a65981481f48522df6c4-09cdf531a5f18f7638c512e92941303ade109ef2.png"
@@ -96,6 +138,12 @@
       "make": "Tesla",
       "model": "Model S",
       "chargetrip_version": "85 (2013 - 2016)"
+    },
+    "range": {
+      "chargetrip_range": {
+        "best": 357,
+        "worst": 323
+      }
     },
     "media": {
       "image": {
@@ -110,6 +158,12 @@
       "model": "Model Y",
       "chargetrip_version": "Long Range Dual Motor (2022 - present)"
     },
+    "range": {
+      "chargetrip_range": {
+        "best": 453,
+        "worst": 404
+      }
+    },
     "media": {
       "image": {
         "thumbnail_url": "https://cars.chargetrip.io/61fa2f5170d2c0b3b340dbb0-cc5f8edffaa07d540ee9dc697058d17552af5620.png"
@@ -122,6 +176,12 @@
       "make": "Xpeng",
       "model": "G3",
       "chargetrip_version": "460"
+    },
+    "range": {
+      "chargetrip_range": {
+        "best": 326,
+        "worst": 289
+      }
     },
     "media": {
       "image": {

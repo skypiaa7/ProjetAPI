@@ -18,11 +18,18 @@ const vehicleListQuery = `
         model
         chargetrip_version
       }
+      range {
+        chargetrip_range {
+          best
+          worst
+        }
+      }
       media {
         image {
           thumbnail_url
         }
       }
+      
     }
   }
 `;
