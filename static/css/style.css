@@ -1,9 +1,24 @@
+/* static/css/style.css */
+
 /* Réinitialiser les marges et paddings */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
+}
+
+/* Indicateur de chargement */
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1001;
 }
 
 /* Conteneur du formulaire */
@@ -31,10 +46,13 @@ html, body {
 
 /* Style des champs du formulaire */
 input, select, button {
-    margin: 5px;
+    margin: 5px 0;
     padding: 8px;
     font-size: 14px;
     border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Style du bouton */
@@ -43,6 +61,7 @@ button {
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
+    border: none;
 }
 
 button:hover {
@@ -52,6 +71,7 @@ button:hover {
 /* Carte */
 #map {
     height: 100vh; /* La carte prend toute la hauteur de la fenêtre */
+    width: 100%; /* La carte prend toute la largeur de la fenêtre */
     z-index: 1; /* La carte reste derrière le formulaire */
 }
 
@@ -60,4 +80,15 @@ button:hover {
     font-size: 1.2em;
     margin-bottom: 10px;
     text-align: center;
+}
+
+/* Détails du véhicule */
+#vehicle-details {
+    margin-top: 10px;
+    text-align: center;
+}
+
+#vehicle-details img {
+    margin-top: 10px;
+    border-radius: 5px;
 }

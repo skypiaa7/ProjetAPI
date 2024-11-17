@@ -1,3 +1,4 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,9 +7,12 @@
     <title>Carte et Formulaire</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.css">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <!-- Indicateur de chargement -->
+    <div id="loading">Chargement de la carte...</div>
+
     <!-- Conteneur principal pour les formulaires -->
     <div id="form-container">
         <!-- Premier formulaire : Sélection des villes -->
@@ -36,6 +40,6 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
-    <script src="/static/js/map.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 </body>
 </html>

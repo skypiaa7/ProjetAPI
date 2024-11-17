@@ -1,3 +1,5 @@
+// static/js/map.js
+
 // Initialiser la carte avec un centre et un niveau de zoom
 var map = L.map('map').setView([48.8566, 2.3522], 6); // Vue centrée sur la France
 
@@ -9,11 +11,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Variables pour les marqueurs
 var startMarker = null;
 var endMarker = null;
-var routeLine = null;  // Nouvelle variable pour stocker la ligne de route
+var routeLine = null;  // Variable pour stocker la ligne de route
 
 // Fonction pour obtenir un trajet via OpenRouteService
+const OPENROUTESERVICE_API_KEY = '5b3ce3597851110001cf6248d96076cf98fd4e48aa2854bd1275baf1'; // Remplacez par votre clé API
+
 function getRoute(startCoords, endCoords) {
-    var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248d96076cf98fd4e48aa2854bd1275baf1&start=${startCoords.lon},${startCoords.lat}&end=${endCoords.lon},${endCoords.lat}`;
+    var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${OPENROUTESERVICE_API_KEY}&start=${startCoords.lon},${startCoords.lat}&end=${endCoords.lon},${endCoords.lat}`;
     
     fetch(url)
         .then(response => response.json())
@@ -71,14 +75,14 @@ function addMarkers() {
 
 // Fonction pour obtenir les coordonnées de la ville
 function geocodeCity(city, callback) {
-    var url = `https://nominatim.openstreetmap.org/search?q=${city}&format=json&limit=1`;
+    var url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
     
     fetch(url)
         .then(response => response.json())
         .then(data => {
             if (data.length > 0) {
-                var lat = data[0].lat;
-                var lon = data[0].lon;
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
                 callback({ lat: lat, lon: lon });
             } else {
                 alert("Aucune ville trouvée.");
@@ -86,6 +90,57 @@ function geocodeCity(city, callback) {
         })
         .catch(error => console.error('Erreur lors de la récupération des données :', error));
 }
+
+// Initialiser Awesomplete pour les champs de saisie des villes
+document.addEventListener('DOMContentLoaded', function () {
+    const startCityInput = document.getElementById('startCity');
+    const endCityInput = document.getElementById('endCity');
+
+    const startAwesomplete = new Awesomplete(startCityInput, {
+        minChars: 2,
+        maxItems: 5,
+        autoFirst: true,
+        list: []
+    });
+
+    const endAwesomplete = new Awesomplete(endCityInput, {
+        minChars: 2,
+        maxItems: 5,
+        autoFirst: true,
+        list: []
+    });
+
+    // Fonction pour mettre à jour les suggestions
+    function updateSuggestions(inputElement, awesompleteInstance) {
+        const query = inputElement.value;
+        if (query.length < 2) {
+            awesompleteInstance.list = [];
+            return;
+        }
+
+        fetch(`/autocomplete?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                awesompleteInstance.list = data.map(item => item.label);
+            })
+            .catch(error => console.error('Erreur lors de l\'autocomplétion :', error));
+    }
+
+    // Ajouter des événements pour mettre à jour les suggestions
+    startCityInput.addEventListener('input', function () {
+        updateSuggestions(startCityInput, startAwesomplete);
+    });
+
+    endCityInput.addEventListener('input', function () {
+        updateSuggestions(endCityInput, endAwesomplete);
+    });
+
+    // Supprimer l'indicateur de chargement une fois la carte initialisée
+    var loading = document.getElementById('loading');
+    if (loading) {
+        loading.style.display = 'none';
+    }
+}); // <-- Ajout de la parenthèse fermante et du point-virgule
 
 // Fonction pour récupérer la liste des véhicules depuis le fichier JSON
 function fetchVehicles() {
@@ -112,12 +167,13 @@ function fetchVehicles() {
                         <strong>Autonomie:</strong> ${selectedVehicle.range.chargetrip_range.best} km (meilleure) - ${selectedVehicle.range.chargetrip_range.worst} km (pire) <br>
                         <img src="${selectedVehicle.media.image.thumbnail_url}" alt="${selectedVehicle.naming.make} ${selectedVehicle.naming.model}" style="width: 200px;">
                     `;
+                } else {
+                    document.getElementById('vehicle-details').innerHTML = '';
                 }
             });
         })
         .catch(error => console.error('Erreur lors du chargement des véhicules :', error));
 }
-
 
 // Appeler la fonction pour récupérer les véhicules au chargement de la page
 window.onload = function () {
