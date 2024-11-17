@@ -1,6 +1,8 @@
 # app.py
 from flask import Flask, render_template, request, jsonify
 import requests
+import os
+import json
 
 app = Flask(__name__)
 
@@ -43,7 +45,7 @@ def get_route():
     if not start or not end:
         return jsonify({"error": "Coordonnées de départ et d'arrivée requises"}), 400
 
-    # Préparer l'appel à l'API OpenRouteService
+    # Préparer l'appel à l'API OpenRouteService avec format GeoJSON
     url = 'https://api.openrouteservice.org/v2/directions/driving-car'
     headers = {
         'Authorization': OPENROUTESERVICE_API_KEY,
@@ -53,7 +55,8 @@ def get_route():
         "coordinates": [
             [start['lon'], start['lat']],
             [end['lon'], end['lat']]
-        ]
+        ],
+        "format": "geojson"  # Demande de la géométrie en format GeoJSON
     }
 
     response = requests.post(url, json=body, headers=headers)
@@ -62,6 +65,18 @@ def get_route():
     else:
         # Vous pouvez personnaliser le message d'erreur selon le besoin
         return jsonify({"error": "Erreur lors de la récupération de l'itinéraire"}), response.status_code
+
+@app.route('/vehicles', methods=['GET'])
+def get_vehicles():
+    try:
+        # Chemin vers le fichier vehicleData.json
+        vehicle_file_path = os.path.join(app.static_folder, 'js', 'vehicleData.json')
+        with open(vehicle_file_path, 'r', encoding='utf-8') as f:
+            vehicles = json.load(f)
+        return jsonify(vehicles)
+    except Exception as e:
+        print(f"Erreur lors du chargement des véhicules : {e}")
+        return jsonify({"error": "Impossible de charger les données des véhicules."}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

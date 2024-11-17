@@ -56,6 +56,19 @@ function getRoute(startCoords, endCoords) {
                 // Ajouter une polyline sur la carte
                 routeLine = L.polyline(routeCoords, { color: 'blue' }).addTo(map);
                 map.fitBounds(routeLine.getBounds());
+            } else if (geometry.type === "LineString" && geometry.coordinates) {
+                var routeCoords = geometry.coordinates.map(function(coord) {
+                    return [coord[1], coord[0]]; // Inverser lat et lon
+                });
+
+                // Si une ligne existe déjà, la retirer
+                if (routeLine) {
+                    map.removeLayer(routeLine); // Supprimer l'itinéraire précédent
+                }
+
+                // Ajouter une polyline sur la carte
+                routeLine = L.polyline(routeCoords, { color: 'blue' }).addTo(map);
+                map.fitBounds(routeLine.getBounds());
             } else {
                 alert("Format de géométrie non supporté.");
             }
@@ -176,11 +189,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Fonction pour récupérer la liste des véhicules depuis le fichier JSON
+// Fonction pour récupérer la liste des véhicules depuis le backend Flask
 function fetchVehicles() {
-    fetch('/static/js/vehicleData.json')  // URL relative vers le fichier JSON
-        .then(response => response.json())  // Parser le fichier JSON
+    fetch('/vehicles')  // URL vers la nouvelle route backend
+        .then(response => response.json())  // Parser la réponse JSON
         .then(vehicles => {
+            if (vehicles.error) {
+                alert(vehicles.error);
+                return;
+            }
+
             const vehicleList = document.getElementById('vehicle-list');
             
             // Remplir la liste déroulante avec les véhicules
