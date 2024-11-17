@@ -13,19 +13,39 @@ var startMarker = null;
 var endMarker = null;
 var routeLine = null;  // Variable pour stocker la ligne de route
 
-// Fonction pour obtenir un trajet via OpenRouteService
-const OPENROUTESERVICE_API_KEY = '5b3ce3597851110001cf6248d96076cf98fd4e48aa2854bd1275baf1'; // Remplacez par votre clé API
-
+// Fonction pour obtenir un trajet via le backend Flask
 function getRoute(startCoords, endCoords) {
-    var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${OPENROUTESERVICE_API_KEY}&start=${startCoords.lon},${startCoords.lat}&end=${endCoords.lon},${endCoords.lat}`;
+    var url = '/get-route';
+    var payload = {
+        start: startCoords,
+        end: endCoords
+    };
     
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.features && data.features.length > 0) {
-                var coordinates = data.features[0].geometry.coordinates;
-                var routeCoords = coordinates.map(function(coord) {
-                    return [coord[1], coord[0]]; // Inverser lat et lon
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        if (data && data.routes && data.routes.length > 0) {
+            var route = data.routes[0];
+            var geometry = route.geometry;
+
+            if (typeof geometry === "string") {
+                // Décoder la polyline encodée
+                var decoded = polyline.decode(geometry);
+
+                // Convertir en format [lat, lon]
+                var routeCoords = decoded.map(function(coord) {
+                    return [coord[0], coord[1]];
                 });
 
                 // Si une ligne existe déjà, la retirer
@@ -37,10 +57,13 @@ function getRoute(startCoords, endCoords) {
                 routeLine = L.polyline(routeCoords, { color: 'blue' }).addTo(map);
                 map.fitBounds(routeLine.getBounds());
             } else {
-                alert("Impossible de récupérer un trajet.");
+                alert("Format de géométrie non supporté.");
             }
-        })
-        .catch(error => console.error('Erreur lors de la récupération de l\'itinéraire :', error));
+        } else {
+            alert("Impossible de récupérer un trajet.");
+        }
+    })
+    .catch(error => console.error('Erreur lors de la récupération de l\'itinéraire :', error));
 }
 
 // Fonction pour ajouter un marqueur
@@ -75,20 +98,31 @@ function addMarkers() {
 
 // Fonction pour obtenir les coordonnées de la ville
 function geocodeCity(city, callback) {
-    var url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+    var url = `/autocomplete?q=${encodeURIComponent(city)}`;
     
     fetch(url)
         .then(response => response.json())
         .then(data => {
             if (data.length > 0) {
-                var lat = parseFloat(data[0].lat);
-                var lon = parseFloat(data[0].lon);
-                callback({ lat: lat, lon: lon });
+                // Utiliser une requête Nominatim pour obtenir les coordonnées
+                var geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+                fetch(geocodeUrl)
+                    .then(response => response.json())
+                    .then(geoData => {
+                        if (geoData.length > 0) {
+                            var lat = parseFloat(geoData[0].lat);
+                            var lon = parseFloat(geoData[0].lon);
+                            callback({ lat: lat, lon: lon });
+                        } else {
+                            alert("Aucune ville trouvée.");
+                        }
+                    })
+                    .catch(error => console.error('Erreur lors de la récupération des données géocodées :', error));
             } else {
-                alert("Aucune ville trouvée.");
+                alert("Aucune ville correspondante trouvée.");
             }
         })
-        .catch(error => console.error('Erreur lors de la récupération des données :', error));
+        .catch(error => console.error('Erreur lors de l\'autocomplétion :', error));
 }
 
 // Initialiser Awesomplete pour les champs de saisie des villes
@@ -140,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (loading) {
         loading.style.display = 'none';
     }
-}); // <-- Ajout de la parenthèse fermante et du point-virgule
+});
 
 // Fonction pour récupérer la liste des véhicules depuis le fichier JSON
 function fetchVehicles() {
