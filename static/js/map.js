@@ -1,3 +1,5 @@
+// static/js/map.js
+
 // Initialiser la carte avec un centre et un niveau de zoom
 var map = L.map('map').setView([48.8566, 2.3522], 6); // Vue centrée sur la France
 
@@ -9,18 +11,53 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Variables pour les marqueurs
 var startMarker = null;
 var endMarker = null;
-var routeLine = null;  // Nouvelle variable pour stocker la ligne de route
+var routeLine = null;  // Variable pour stocker la ligne de route
 
-// Fonction pour obtenir un trajet via OpenRouteService
+// Fonction pour obtenir un trajet via le backend Flask
 function getRoute(startCoords, endCoords) {
-    var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248d96076cf98fd4e48aa2854bd1275baf1&start=${startCoords.lon},${startCoords.lat}&end=${endCoords.lon},${endCoords.lat}`;
+    var url = '/get-route';
+    var payload = {
+        start: startCoords,
+        end: endCoords
+    };
     
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.features && data.features.length > 0) {
-                var coordinates = data.features[0].geometry.coordinates;
-                var routeCoords = coordinates.map(function(coord) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        if (data && data.routes && data.routes.length > 0) {
+            var route = data.routes[0];
+            var geometry = route.geometry;
+
+            if (typeof geometry === "string") {
+                // Décoder la polyline encodée
+                var decoded = polyline.decode(geometry);
+
+                // Convertir en format [lat, lon]
+                var routeCoords = decoded.map(function(coord) {
+                    return [coord[0], coord[1]];
+                });
+
+                // Si une ligne existe déjà, la retirer
+                if (routeLine) {
+                    map.removeLayer(routeLine); // Supprimer l'itinéraire précédent
+                }
+
+                // Ajouter une polyline sur la carte
+                routeLine = L.polyline(routeCoords, { color: 'blue' }).addTo(map);
+                map.fitBounds(routeLine.getBounds());
+            } else if (geometry.type === "LineString" && geometry.coordinates) {
+                var routeCoords = geometry.coordinates.map(function(coord) {
                     return [coord[1], coord[0]]; // Inverser lat et lon
                 });
 
@@ -33,10 +70,13 @@ function getRoute(startCoords, endCoords) {
                 routeLine = L.polyline(routeCoords, { color: 'blue' }).addTo(map);
                 map.fitBounds(routeLine.getBounds());
             } else {
-                alert("Impossible de récupérer un trajet.");
+                alert("Format de géométrie non supporté.");
             }
-        })
-        .catch(error => console.error('Erreur lors de la récupération de l\'itinéraire :', error));
+        } else {
+            alert("Impossible de récupérer un trajet.");
+        }
+    })
+    .catch(error => console.error('Erreur lors de la récupération de l\'itinéraire :', error));
 }
 
 // Fonction pour ajouter un marqueur
@@ -71,27 +111,94 @@ function addMarkers() {
 
 // Fonction pour obtenir les coordonnées de la ville
 function geocodeCity(city, callback) {
-    var url = `https://nominatim.openstreetmap.org/search?q=${city}&format=json&limit=1`;
+    var url = `/autocomplete?q=${encodeURIComponent(city)}`;
     
     fetch(url)
         .then(response => response.json())
         .then(data => {
             if (data.length > 0) {
-                var lat = data[0].lat;
-                var lon = data[0].lon;
-                callback({ lat: lat, lon: lon });
+                // Utiliser une requête Nominatim pour obtenir les coordonnées
+                var geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+                fetch(geocodeUrl)
+                    .then(response => response.json())
+                    .then(geoData => {
+                        if (geoData.length > 0) {
+                            var lat = parseFloat(geoData[0].lat);
+                            var lon = parseFloat(geoData[0].lon);
+                            callback({ lat: lat, lon: lon });
+                        } else {
+                            alert("Aucune ville trouvée.");
+                        }
+                    })
+                    .catch(error => console.error('Erreur lors de la récupération des données géocodées :', error));
             } else {
-                alert("Aucune ville trouvée.");
+                alert("Aucune ville correspondante trouvée.");
             }
         })
-        .catch(error => console.error('Erreur lors de la récupération des données :', error));
+        .catch(error => console.error('Erreur lors de l\'autocomplétion :', error));
 }
 
-// Fonction pour récupérer la liste des véhicules depuis le fichier JSON
+// Initialiser Awesomplete pour les champs de saisie des villes
+document.addEventListener('DOMContentLoaded', function () {
+    const startCityInput = document.getElementById('startCity');
+    const endCityInput = document.getElementById('endCity');
+
+    const startAwesomplete = new Awesomplete(startCityInput, {
+        minChars: 2,
+        maxItems: 5,
+        autoFirst: true,
+        list: []
+    });
+
+    const endAwesomplete = new Awesomplete(endCityInput, {
+        minChars: 2,
+        maxItems: 5,
+        autoFirst: true,
+        list: []
+    });
+
+    // Fonction pour mettre à jour les suggestions
+    function updateSuggestions(inputElement, awesompleteInstance) {
+        const query = inputElement.value;
+        if (query.length < 2) {
+            awesompleteInstance.list = [];
+            return;
+        }
+
+        fetch(`/autocomplete?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                awesompleteInstance.list = data.map(item => item.label);
+            })
+            .catch(error => console.error('Erreur lors de l\'autocomplétion :', error));
+    }
+
+    // Ajouter des événements pour mettre à jour les suggestions
+    startCityInput.addEventListener('input', function () {
+        updateSuggestions(startCityInput, startAwesomplete);
+    });
+
+    endCityInput.addEventListener('input', function () {
+        updateSuggestions(endCityInput, endAwesomplete);
+    });
+
+    // Supprimer l'indicateur de chargement une fois la carte initialisée
+    var loading = document.getElementById('loading');
+    if (loading) {
+        loading.style.display = 'none';
+    }
+});
+
+// Fonction pour récupérer la liste des véhicules depuis le backend Flask
 function fetchVehicles() {
-    fetch('/static/js/vehicleData.json')  // URL relative vers le fichier JSON
-        .then(response => response.json())  // Parser le fichier JSON
+    fetch('/vehicles')  // URL vers la nouvelle route backend
+        .then(response => response.json())  // Parser la réponse JSON
         .then(vehicles => {
+            if (vehicles.error) {
+                alert(vehicles.error);
+                return;
+            }
+
             const vehicleList = document.getElementById('vehicle-list');
             
             // Remplir la liste déroulante avec les véhicules
@@ -112,12 +219,13 @@ function fetchVehicles() {
                         <strong>Autonomie:</strong> ${selectedVehicle.range.chargetrip_range.best} km (meilleure) - ${selectedVehicle.range.chargetrip_range.worst} km (pire) <br>
                         <img src="${selectedVehicle.media.image.thumbnail_url}" alt="${selectedVehicle.naming.make} ${selectedVehicle.naming.model}" style="width: 200px;">
                     `;
+                } else {
+                    document.getElementById('vehicle-details').innerHTML = '';
                 }
             });
         })
         .catch(error => console.error('Erreur lors du chargement des véhicules :', error));
 }
-
 
 // Appeler la fonction pour récupérer les véhicules au chargement de la page
 window.onload = function () {

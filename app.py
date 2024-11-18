@@ -1,7 +1,13 @@
+# app.py
 from flask import Flask, render_template, request, jsonify
-import requests 
+import requests
+import os
+import json
 
 app = Flask(__name__)
+
+# Clé API OpenRouteService en clair
+OPENROUTESERVICE_API_KEY = '5b3ce3597851110001cf6248d96076cf98fd4e48aa2854bd1275baf1'  # Remplacez par votre clé API
 
 @app.route('/')
 def index():
@@ -11,14 +17,66 @@ def index():
 def autocomplete():
     city_query = request.args.get('q')
     if city_query:
-        url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=5"
-        response = requests.get(url)
+        # Inclure countrycodes=fr pour prioriser les villes de France
+        url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=5&addressdetails=1&countrycodes=fr"
+        headers = {'User-Agent': 'VotreNomDApplication'}  # Remplacez par le nom de votre application
+        response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
-            suggestions = [{"label": item['display_name'], "value": item['display_name']} for item in data]
+            suggestions = []
+            for item in data:
+                address = item.get('address', {})
+                # Nominatim peut utiliser 'city', 'town', 'village' ou 'hamlet' pour la localité
+                city = address.get('city') or address.get('town') or address.get('village') or address.get('hamlet')
+                country = address.get('country')
+                if city and country:
+                    label = f"{city}, {country}"
+                    value = f"{city}, {country}"
+                    suggestions.append({"label": label, "value": value})
             return jsonify(suggestions)
     return jsonify([])
 
+@app.route('/get-route', methods=['POST'])
+def get_route():
+    data = request.get_json()
+    start = data.get('start')
+    end = data.get('end')
+    
+    if not start or not end:
+        return jsonify({"error": "Coordonnées de départ et d'arrivée requises"}), 400
+
+    # Préparer l'appel à l'API OpenRouteService avec format GeoJSON
+    url = 'https://api.openrouteservice.org/v2/directions/driving-car'
+    headers = {
+        'Authorization': OPENROUTESERVICE_API_KEY,
+        'Content-Type': 'application/json'
+    }
+    body = {
+        "coordinates": [
+            [start['lon'], start['lat']],
+            [end['lon'], end['lat']]
+        ],
+        "format": "geojson"  # Demande de la géométrie en format GeoJSON
+    }
+
+    response = requests.post(url, json=body, headers=headers)
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        # Vous pouvez personnaliser le message d'erreur selon le besoin
+        return jsonify({"error": "Erreur lors de la récupération de l'itinéraire"}), response.status_code
+
+@app.route('/vehicles', methods=['GET'])
+def get_vehicles():
+    try:
+        # Chemin vers le fichier vehicleData.json
+        vehicle_file_path = os.path.join(app.static_folder, 'js', 'vehicleData.json')
+        with open(vehicle_file_path, 'r', encoding='utf-8') as f:
+            vehicles = json.load(f)
+        return jsonify(vehicles)
+    except Exception as e:
+        print(f"Erreur lors du chargement des véhicules : {e}")
+        return jsonify({"error": "Impossible de charger les données des véhicules."}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
-
