@@ -1,0 +1,6 @@
+# Environnement virtuel
+venv/
+
+# Fichiers d'environnement
+.env
+environment.json
