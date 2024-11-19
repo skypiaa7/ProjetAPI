@@ -3,80 +3,104 @@ from flask import Flask, render_template, request, jsonify
 import requests
 import os
 import json
+from dotenv import load_dotenv
 
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
+
+# Récupérer la clé API OpenRouteService depuis les variables d'environnement
+OPENROUTESERVICE_API_KEY = os.getenv('OPENROUTESERVICE_API_KEY')
+
+# Initialiser l'application Flask
 app = Flask(__name__)
-
-# Clé API OpenRouteService en clair
-OPENROUTESERVICE_API_KEY = '5b3ce3597851110001cf6248d96076cf98fd4e48aa2854bd1275baf1'  # Remplacez par votre clé API
 
 @app.route('/')
 def index():
+    """
+    Route pour la page d'accueil.
+    Rendu du template 'index.html'.
+    """
     return render_template('index.html')
 
 @app.route('/autocomplete', methods=['GET'])
 def autocomplete():
-    city_query = request.args.get('q')
+    """
+    Route pour l'autocomplétion des villes.
+    Prend un paramètre 'q' en query string et retourne des suggestions de villes en France.
+    """
+    city_query = request.args.get('q')  # Récupérer le paramètre de recherche 'q'
     if city_query:
-        # Inclure countrycodes=fr pour prioriser les villes de France
+        # Construire l'URL de la requête à l'API Nominatim d'OpenStreetMap
         url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=5&addressdetails=1&countrycodes=fr"
-        headers = {'User-Agent': 'VotreNomDApplication'}  # Remplacez par le nom de votre application
-        response = requests.get(url, headers=headers)
+        headers = {'User-Agent': 'VotreNomDApplication'}  # Définir l'agent utilisateur
+        response = requests.get(url, headers=headers)  # Faire la requête GET à l'API
         if response.status_code == 200:
-            data = response.json()
+            data = response.json()  # Parser la réponse JSON
             suggestions = []
             for item in data:
                 address = item.get('address', {})
-                # Nominatim peut utiliser 'city', 'town', 'village' ou 'hamlet' pour la localité
+                # Extraire le nom de la ville en fonction des différentes clés possibles
                 city = address.get('city') or address.get('town') or address.get('village') or address.get('hamlet')
                 country = address.get('country')
                 if city and country:
-                    label = f"{city}, {country}"
-                    value = f"{city}, {country}"
+                    label = f"{city}, {country}"  # Format de l'étiquette pour l'autocomplétion
+                    value = f"{city}, {country}"  # Valeur retournée
                     suggestions.append({"label": label, "value": value})
-            return jsonify(suggestions)
-    return jsonify([])
+            return jsonify(suggestions)  # Retourner les suggestions au format JSON
+    return jsonify([])  # Retourner une liste vide si aucune suggestion n'est trouvée
 
 @app.route('/get-route', methods=['POST'])
 def get_route():
-    data = request.get_json()
-    start = data.get('start')
-    end = data.get('end')
+    """
+    Route pour obtenir l'itinéraire entre deux points.
+    Attend un JSON contenant 'start' et 'end' avec les coordonnées géographiques.
+    """
+    data = request.get_json()  # Récupérer les données JSON de la requête
+    start = data.get('start')  # Coordonnées de départ
+    end = data.get('end')      # Coordonnées d'arrivée
     
     if not start or not end:
+        # Retourner une erreur si les coordonnées sont manquantes
         return jsonify({"error": "Coordonnées de départ et d'arrivée requises"}), 400
 
-    # Préparer l'appel à l'API OpenRouteService avec format GeoJSON
+    # URL de l'API OpenRouteService pour les directions en voiture
     url = 'https://api.openrouteservice.org/v2/directions/driving-car'
     headers = {
-        'Authorization': OPENROUTESERVICE_API_KEY,
-        'Content-Type': 'application/json'
+        'Authorization': OPENROUTESERVICE_API_KEY,  # Clé API pour l'authentification
+        'Content-Type': 'application/json'           # Type de contenu de la requête
     }
     body = {
         "coordinates": [
-            [start['lon'], start['lat']],
-            [end['lon'], end['lat']]
+            [start['lon'], start['lat']],  # Coordonnées de départ [longitude, latitude]
+            [end['lon'], end['lat']]       # Coordonnées d'arrivée [longitude, latitude]
         ],
-        "format": "geojson"  # Demande de la géométrie en format GeoJSON
+        "format": "geojson"  # Format de la réponse géométrique
     }
 
-    response = requests.post(url, json=body, headers=headers)
+    response = requests.post(url, json=body, headers=headers)  # Faire la requête POST à l'API
     if response.status_code == 200:
-        return jsonify(response.json())
+        return jsonify(response.json())  # Retourner la réponse de l'API au format JSON
     else:
-        # Vous pouvez personnaliser le message d'erreur selon le besoin
+        # Retourner une erreur personnalisée en cas d'échec de la requête
         return jsonify({"error": "Erreur lors de la récupération de l'itinéraire"}), response.status_code
 
 @app.route('/vehicles', methods=['GET'])
 def get_vehicles():
+    """
+    Route pour obtenir les données des véhicules.
+    Lit le fichier 'vehicleData.json' depuis le dossier 'static/json' et le retourne au format JSON.
+    """
     try:
         # Chemin vers le fichier vehicleData.json
-        vehicle_file_path = os.path.join(app.static_folder, 'js', 'vehicleData.json')
+        vehicle_file_path = os.path.join(app.static_folder, 'json', 'vehicleData.json')
         with open(vehicle_file_path, 'r', encoding='utf-8') as f:
-            vehicles = json.load(f)
-        return jsonify(vehicles)
+            vehicles = json.load(f)  # Charger les données JSON du fichier
+        return jsonify(vehicles)  # Retourner les données des véhicules au format JSON
     except Exception as e:
+        # Loguer l'erreur et retourner une réponse d'erreur
         print(f"Erreur lors du chargement des véhicules : {e}")
         return jsonify({"error": "Impossible de charger les données des véhicules."}), 500
 
 if __name__ == '__main__':
+    # Démarrer l'application Flask en mode debug sur le port 5001
     app.run(debug=True, port=5001)
