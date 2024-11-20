@@ -4,6 +4,11 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
+from spyne import Application, rpc, ServiceBase, Unicode, Float, ComplexModel
+from spyne.protocol.soap import Soap11
+from spyne.server.wsgi import WsgiApplication
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from werkzeug.serving import run_simple
 
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
@@ -84,26 +89,6 @@ def get_route():
         # Retourner une erreur personnalisée en cas d'échec de la requête
         return jsonify({"error": "Erreur lors de la récupération de l'itinéraire"}), response.status_code
 
-@app.route('/geocode', methods=['GET'])
-def geocode():
-    """
-    Route pour géocoder une ville et retourner ses coordonnées.
-    Prend un paramètre 'q' en query string et retourne les coordonnées géographiques.
-    """
-    city_query = request.args.get('q')
-    if city_query:
-        url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=1&countrycodes=fr"
-        headers = {'User-Agent': 'VotreNomDApplication'}
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            if data:
-                return jsonify({
-                    'lat': float(data[0]['lat']),
-                    'lon': float(data[0]['lon'])
-                })
-    return jsonify({"error": "Coordonnées non trouvées"}), 404
-
 @app.route('/vehicles', methods=['GET'])
 def get_vehicles():
     """
@@ -121,6 +106,54 @@ def get_vehicles():
         print(f"Erreur lors du chargement des véhicules : {e}")
         return jsonify({"error": "Impossible de charger les données des véhicules."}), 500
 
+# Définir le modèle complexe pour la réponse SOAP avec un nom unique
+class MyGeocodeResponse(ComplexModel):
+    lat = Float
+    lon = Float
+    error = Unicode
+
+# Définir le service SOAP pour le géocodage
+class GeocodeService(ServiceBase):
+    @rpc(Unicode, _returns=MyGeocodeResponse)
+    def Geocode(ctx, city_query):
+        """
+        Service SOAP pour géocoder une ville et retourner ses coordonnées.
+        Prend une chaîne de caractères 'city_query' et retourne un objet avec 'lat' et 'lon'.
+        """
+        response = MyGeocodeResponse()
+        if city_query:
+            url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=1&countrycodes=fr"
+            headers = {'User-Agent': 'VotreNomDApplication'}
+            req = requests.get(url, headers=headers)
+            if req.status_code == 200:
+                data = req.json()
+                if data:
+                    response.lat = float(data[0]['lat'])
+                    response.lon = float(data[0]['lon'])
+                else:
+                    response.error = "Coordonnées non trouvées"
+            else:
+                response.error = "Erreur lors de la requête de géocodage"
+        else:
+            response.error = "Paramètre 'city_query' manquant"
+        return response
+
+# Configurer l'application Spyne
+soap_app = Application(
+    [GeocodeService],
+    tns='spyne.geocode',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
+
+# Créer l'application WSGI pour Spyne
+soap_wsgi_app = WsgiApplication(soap_app)
+
+# Dispatcher pour combiner Flask et Spyne
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/soap/geocode': soap_wsgi_app
+})
+
 if __name__ == '__main__':
     # Démarrer l'application Flask en mode debug sur le port 5001
-    app.run(debug=True, port=5001)
+    run_simple('0.0.0.0', 5001, app, use_debugger=True, use_reloader=True)

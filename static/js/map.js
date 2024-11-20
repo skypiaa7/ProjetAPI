@@ -8,7 +8,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// Variables pour les marqueurs
+// Variables pour les marqueurs et la ligne de route
 var startMarker = null;
 var endMarker = null;
 var routeLine = null;  // Variable pour stocker la ligne de route
@@ -89,14 +89,22 @@ function addMarkers() {
         return;
     }
 
-    geocodeCity(startCity, function(startCoords) {
+    geocodeCitySOAP(startCity, function(startCoords) {
+        if (startCoords.error) {
+            alert(startCoords.error);
+            return;
+        }
         if (startMarker) {
             map.removeLayer(startMarker);
         }
         startMarker = L.marker([startCoords.lat, startCoords.lon]).addTo(map)
             .bindPopup("Ville de départ : " + startCity).openPopup();
 
-        geocodeCity(endCity, function(endCoords) {
+        geocodeCitySOAP(endCity, function(endCoords) {
+            if (endCoords.error) {
+                alert(endCoords.error);
+                return;
+            }
             if (endMarker) {
                 map.removeLayer(endMarker);
             }
@@ -109,20 +117,67 @@ function addMarkers() {
     });
 }
 
-// Fonction pour obtenir les coordonnées de la ville via le backend
-function geocodeCity(city, callback) {
-    var url = `/geocode?q=${encodeURIComponent(city)}`;
-    
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert("Aucune ville correspondante trouvée.");
+// Fonction pour obtenir les coordonnées de la ville via le backend SOAP
+function geocodeCitySOAP(city, callback) {
+    var url = `/soap/geocode`;
+    var soapEnvelope = `
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="spyne.geocode">
+            <soapenv:Header/>
+            <soapenv:Body>
+                <tns:Geocode>
+                    <tns:city_query>${city}</tns:city_query>
+                </tns:Geocode>
+            </soapenv:Body>
+        </soapenv:Envelope>
+    `;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/xml;charset=UTF-8',
+            'SOAPAction': 'spyne.geocode.Geocode'
+        },
+        body: soapEnvelope
+    })
+    .then(response => response.text())
+    .then(str => {
+        // Parser le XML de la réponse
+        var parser = new DOMParser();
+        var xmlDoc = parser.parseFromString(str, "application/xml");
+        
+        // Vérifier s'il y a une erreur
+        var errorNode = xmlDoc.getElementsByTagNameNS('spyne.geocode', 'error')[0];
+        if (errorNode && errorNode.textContent.trim() !== "") {
+            callback({ error: errorNode.textContent });
+            return;
+        }
+
+        // Extraire les coordonnées directement sous GeocodeResponse > GeocodeResult
+        var geocodeResponse = xmlDoc.getElementsByTagNameNS('spyne.geocode', 'GeocodeResponse')[0];
+        if (geocodeResponse) {
+            var geocodeResult = geocodeResponse.getElementsByTagNameNS('spyne.geocode', 'GeocodeResult')[0];
+            if (geocodeResult) {
+                var latNode = geocodeResult.getElementsByTagNameNS('spyne.geocode', 'lat')[0];
+                var lonNode = geocodeResult.getElementsByTagNameNS('spyne.geocode', 'lon')[0];
+                
+                if (latNode && lonNode) {
+                    var lat = parseFloat(latNode.textContent);
+                    var lon = parseFloat(lonNode.textContent);
+                    callback({ lat: lat, lon: lon });
+                } else {
+                    callback({ error: "Coordonnées non trouvées" });
+                }
             } else {
-                callback({ lat: data.lat, lon: data.lon });
+                callback({ error: "GeocodeResult non trouvé" });
             }
-        })
-        .catch(error => console.error('Erreur lors du géocodage :', error));
+        } else {
+            callback({ error: "GeocodeResponse non trouvé" });
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors du géocodage SOAP :', error);
+        callback({ error: "Erreur lors du géocodage" });
+    });
 }
 
 // Initialiser Awesomplete pour les champs de saisie des villes

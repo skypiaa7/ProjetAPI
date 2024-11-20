@@ -1,3 +1,7 @@
-Flask==3.0.0  # Assurez-vous d'utiliser la version compatible
-requests==2.31.0
-python-dotenv==1.0.0
+Flask==3.1.0
+lxml==5.3.0
+python-dotenv==1.0.1
+requests==2.32.3
+spyne==2.14.0
+urllib3==2.2.3
+Werkzeug==3.1.3
