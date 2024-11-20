@@ -84,6 +84,26 @@ def get_route():
         # Retourner une erreur personnalisée en cas d'échec de la requête
         return jsonify({"error": "Erreur lors de la récupération de l'itinéraire"}), response.status_code
 
+@app.route('/geocode', methods=['GET'])
+def geocode():
+    """
+    Route pour géocoder une ville et retourner ses coordonnées.
+    Prend un paramètre 'q' en query string et retourne les coordonnées géographiques.
+    """
+    city_query = request.args.get('q')
+    if city_query:
+        url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=1&countrycodes=fr"
+        headers = {'User-Agent': 'VotreNomDApplication'}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            if data:
+                return jsonify({
+                    'lat': float(data[0]['lat']),
+                    'lon': float(data[0]['lon'])
+                })
+    return jsonify({"error": "Coordonnées non trouvées"}), 404
+
 @app.route('/vehicles', methods=['GET'])
 def get_vehicles():
     """

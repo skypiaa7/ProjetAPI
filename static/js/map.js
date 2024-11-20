@@ -109,33 +109,20 @@ function addMarkers() {
     });
 }
 
-// Fonction pour obtenir les coordonnées de la ville
+// Fonction pour obtenir les coordonnées de la ville via le backend
 function geocodeCity(city, callback) {
-    var url = `/autocomplete?q=${encodeURIComponent(city)}`;
+    var url = `/geocode?q=${encodeURIComponent(city)}`;
     
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (data.length > 0) {
-                // Utiliser une requête Nominatim pour obtenir les coordonnées
-                var geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
-                fetch(geocodeUrl)
-                    .then(response => response.json())
-                    .then(geoData => {
-                        if (geoData.length > 0) {
-                            var lat = parseFloat(geoData[0].lat);
-                            var lon = parseFloat(geoData[0].lon);
-                            callback({ lat: lat, lon: lon });
-                        } else {
-                            alert("Aucune ville trouvée.");
-                        }
-                    })
-                    .catch(error => console.error('Erreur lors de la récupération des données géocodées :', error));
-            } else {
+            if (data.error) {
                 alert("Aucune ville correspondante trouvée.");
+            } else {
+                callback({ lat: data.lat, lon: data.lon });
             }
         })
-        .catch(error => console.error('Erreur lors de l\'autocomplétion :', error));
+        .catch(error => console.error('Erreur lors du géocodage :', error));
 }
 
 // Initialiser Awesomplete pour les champs de saisie des villes
@@ -187,20 +174,25 @@ document.addEventListener('DOMContentLoaded', function () {
     if (loading) {
         loading.style.display = 'none';
     }
+
+    // Appeler la fonction pour récupérer les véhicules
+    fetchVehicles();
 });
 
-// Fonction pour récupérer la liste des véhicules depuis le backend Flask
+// Fonction pour récupérer la liste des véhicules depuis le backend Flask via REST
 function fetchVehicles() {
-    fetch('/vehicles')  // URL vers la nouvelle route backend
-        .then(response => response.json())  // Parser la réponse JSON
-        .then(vehicles => {
-            if (vehicles.error) {
-                alert(vehicles.error);
-                return;
-            }
-
+    fetch('/vehicles', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(vehicles => {
+        if (vehicles && Array.isArray(vehicles)) {
             const vehicleList = document.getElementById('vehicle-list');
-            
+            vehicleList.innerHTML = '<option value="">Sélectionner un véhicule</option>'; // Réinitialiser la liste
+
             // Remplir la liste déroulante avec les véhicules
             vehicles.forEach(vehicle => {
                 const option = document.createElement('option');
@@ -223,11 +215,9 @@ function fetchVehicles() {
                     document.getElementById('vehicle-details').innerHTML = '';
                 }
             });
-        })
-        .catch(error => console.error('Erreur lors du chargement des véhicules :', error));
+        } else {
+            alert("Aucune donnée de véhicule trouvée.");
+        }
+    })
+    .catch(error => console.error('Erreur lors du chargement des véhicules :', error));
 }
-
-// Appeler la fonction pour récupérer les véhicules au chargement de la page
-window.onload = function () {
-    fetchVehicles();
-};
