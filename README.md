@@ -11,10 +11,8 @@ Ce projet est une application qui permet de tracer un route d'un point A à un p
 ## Technologies utilisées
 
 - **Backend** : Flask (Python)
-- **Base de données** : MySQL ou SQLite
 - **Frontend** : HTML, CSS, JavaScript
-- **Conteneurisation** : Docker (si applicable)
-- **Outils supplémentaires** : API REST, outils de test (Unittest ou Pytest)
+- **Outils supplémentaires** : API REST, SOAP
 
 ## Prérequis
 
