@@ -22,8 +22,6 @@ Avant de commencer, vous aurez besoin de :
 
 - Python 3.8 ou version supérieure
 - pip (Gestionnaire de paquets Python)
-- Docker (optionnel, pour conteneurisation)
-- MySQL ou SQLite (selon votre choix pour la base de données)
 
 ## Installation
 
