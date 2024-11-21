@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, render_template, request, jsonify
 import requests
 import os
@@ -10,10 +9,10 @@ from spyne.server.wsgi import WsgiApplication
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.serving import run_simple
 
-# Charger les variables d'environnement depuis le fichier .env
+# Charger les variables d'environnement
 load_dotenv()
 
-# Récupérer la clé API OpenRouteService depuis les variables d'environnement
+# Récupérer la clé API OpenRouteService
 OPENROUTESERVICE_API_KEY = os.getenv('OPENROUTESERVICE_API_KEY')
 
 # Initialiser l'application Flask
@@ -33,11 +32,11 @@ def autocomplete():
     Route pour l'autocomplétion des villes.
     Prend un paramètre 'q' en query string et retourne des suggestions de villes en France.
     """
-    city_query = request.args.get('q')  # Récupérer le paramètre de recherche 'q'
+    city_query = request.args.get('q')
     if city_query:
         # Construire l'URL de la requête à l'API Nominatim d'OpenStreetMap
         url = f"https://nominatim.openstreetmap.org/search?q={city_query}&format=json&limit=5&addressdetails=1&countrycodes=fr"
-        headers = {'User-Agent': 'VotreNomDApplication'}  # Définir l'agent utilisateur
+        headers = {'User-Agent': 'PorojetAPI'}  # Définir l'agent utilisateur
         response = requests.get(url, headers=headers)  # Faire la requête GET à l'API
         if response.status_code == 200:
             data = response.json()  # Parser la réponse JSON
