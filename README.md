@@ -1,13 +1,11 @@
 # ProjetAPI
 
-Ce projet est une application qui permet de gérer et consulter des informations sur les voitures via une API. L'objectif est de fournir une interface simple et performante pour interagir avec une base de données, en réalisant des opérations comme l'ajout, la modification, la suppression ou la consultation des données.
+Ce projet est une application qui permet de tracer un route d'un point A à un point B en fonction de son vehicule électique.
 
 ## Fonctionnalités
 
-- **Ajout de véhicules** : Inscrire de nouveaux véhicules dans la base de données.
-- **Modification de véhicules** : Mettre à jour les informations existantes.
-- **Suppression de véhicules** : Supprimer un véhicule de la base.
 - **Consultation de véhicules** : Voir les détails des véhicules enregistrés.
+- **Consultation de véhicules** : Tracer un trajet d'un point A à un point B
 - **API REST** : Interface permettant une intégration avec des outils ou applications tierces.
 
 ## Technologies utilisées
